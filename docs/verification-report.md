@@ -60,10 +60,27 @@ production build on every push/PR to `main`. Status is visible on the repository
 | Failed runs resume without duplication | `canAppendTurn` guard + unique message constraint |
 | Main workflow on desktop + mobile | responsive Tailwind layouts (manual) |
 
-## Not verified here (requires external access)
+## DB-backed end-to-end (verified against a live PostgreSQL)
 
-- **DB-backed interactive flows** (onboarding write, live dates, durable jobs): require `DATABASE_URL`
-  (PostgreSQL). Code is implemented and typechecked; not exercised here.
+A dedicated Supabase Postgres (project `pairpilot`, ref `fseqplcoudsaolrbdkma`) was provisioned and
+`prisma migrate deploy` applied the committed initial migration. `npm run verify:workflow` passed:
+
+- onboarding persists participant + consent + 2 sources;
+- extraction (fixture) persists evidence; analysis persists with every claim citing evidence;
+- agent-studio claim decision **persists** and is **authorization-checked** (foreign participant → 403);
+- date messages persist; **re-running a completed date adds no duplicates** (idempotent resume);
+- directional rankings persist for each pair;
+- consent withdrawal removes the participant and all derived records (no orphaned evidence).
+
+`npm run complete:run` then completed the seeded run at scale: **300 dates, 3,000 messages, 600
+directional ranking entries, run status = completed**. This same end-to-end verification now runs in CI
+against a Postgres service on every push.
+
+## Not verified here (requires external access still missing)
+
+- **Live public deployment**: no authenticated app-hosting account (Vercel token invalid; no
+  Render/Fly/Railway). Build + runtime verified locally; no public URL produced (not fabricated).
 - **Real LLM dialogue/analysis**: requires `ANTHROPIC_API_KEY`. Fixture mode used and labeled.
-- **Live source extraction**: requires an authorized provider; otherwise fails honestly.
-- **Docker Compose up**: Docker not installed in the build environment; compose authored, not run here.
+- **Live source extraction**: requires an authorized provider + real consent; otherwise fails honestly.
+- **Docker Compose up**: Docker not installed here; compose authored, not run.
+- **Video recording / YouTube upload**: no screen recorder / no authorized YouTube integration.

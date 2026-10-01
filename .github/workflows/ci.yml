@@ -9,6 +9,20 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: pairpilot
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/pairpilot?schema=public
+      AUTH_SESSION_SECRET: ci-insecure-secret-at-least-16-chars
     steps:
       - uses: actions/checkout@v4
 
@@ -37,5 +51,12 @@ jobs:
 
       - name: Production build
         run: npm run build
-        env:
-          AUTH_SESSION_SECRET: ci-insecure-secret-at-least-16-chars
+
+      - name: Apply migrations (E2E)
+        run: npx prisma migrate deploy
+
+      - name: Seed database (E2E)
+        run: npm run db:seed
+
+      - name: End-to-end workflow verification (real Postgres)
+        run: npm run verify:workflow

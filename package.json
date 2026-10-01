@@ -22,7 +22,9 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "worker": "tsx src/workers/index.ts",
-    "showcase:build": "tsx scripts/build-showcase.ts"
+    "showcase:build": "tsx scripts/build-showcase.ts",
+    "verify:workflow": "tsx scripts/verify-workflow.ts",
+    "complete:run": "tsx scripts/complete-run.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",

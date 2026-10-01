@@ -109,7 +109,12 @@ export default async function DatePage({ params }: { params: Promise<{ id: strin
       </div>
 
       <section className="mt-8">
-        <SectionHeading title="Transcript" subtitle="Press play to re-stream the conversation turn by turn." />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <SectionHeading title="Transcript" subtitle="Press play to re-stream the conversation turn by turn." />
+          <Link href={`/showcase/dates/${date.id}/live`} className="btn-secondary">
+            ▶ Open live room (SSE)
+          </Link>
+        </div>
         <DateReplay date={date} />
       </section>
 

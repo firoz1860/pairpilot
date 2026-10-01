@@ -32,6 +32,15 @@ export function getDatesForParticipant(participantId: string): ShowcaseDate[] {
   );
 }
 
+/** The completed date for an unordered pair, in either direction. */
+export function getDateForPair(aId: string, bId: string): ShowcaseDate | undefined {
+  return getShowcase().dates.find(
+    (d) =>
+      (d.participantAId === aId && d.participantBId === bId) ||
+      (d.participantAId === bId && d.participantBId === aId),
+  );
+}
+
 export type {
   CompiledShowcase,
   ShowcaseDate,
