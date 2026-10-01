@@ -17,6 +17,9 @@ next-env.d.ts
 # prisma
 /prisma/generated
 
+# generated showcase artifact (reproducible via `npm run showcase:build`)
+/src/showcase/data
+
 # env files — never commit real secrets
 .env
 .env.local

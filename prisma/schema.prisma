@@ -1,0 +1,334 @@
+// PairPilot data model. PostgreSQL + Prisma.
+// Participant-derived records cascade on delete to support consent withdrawal.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ParticipantStatus {
+  onboarding
+  active
+  withdrawn
+}
+
+enum Platform {
+  linkedin
+  instagram
+}
+
+enum SourceStatus {
+  pending
+  extracting
+  partial
+  complete
+  failed
+  unavailable
+}
+
+enum JobStatus {
+  queued
+  running
+  succeeded
+  failed
+  cancelled
+}
+
+enum EvidenceKind {
+  profile_headline
+  profile_bio
+  profile_section
+  post_caption
+  experience
+  education
+}
+
+enum ClaimCategory {
+  introduction
+  hobby
+  interest
+  professional_background
+  lifestyle_activity
+  conversation_topic
+  relationship_need
+}
+
+enum ClaimDisposition {
+  explicit
+  tentative_interpretation
+}
+
+enum ApprovalStatus {
+  pending
+  approved
+  rejected
+  flagged
+}
+
+enum RunKind {
+  fictional
+  real
+}
+
+enum RunStatus {
+  pending
+  running
+  paused
+  completed
+}
+
+enum DateStatus {
+  pending
+  running
+  paused
+  completed
+  cancelled
+}
+
+enum DateStage {
+  introduction
+  shared_interests
+  practical_scenario
+  reflection
+}
+
+enum DeletionStatus {
+  requested
+  processing
+  completed
+}
+
+model Participant {
+  id           String            @id @default(cuid())
+  displayName  String
+  email        String            @unique
+  passwordHash String
+  isFictional  Boolean           @default(false)
+  status       ParticipantStatus @default(onboarding)
+  headline     String?
+  city         String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  consent         EligibilityConsent?
+  sources         SourceProfile[]
+  analyses        AnalysisVersion[]
+  agent           Agent?
+  deletionRequest DeletionRequest?
+
+  @@index([status])
+  @@index([isFictional])
+}
+
+model EligibilityConsent {
+  id                    String      @id @default(cuid())
+  participant           Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participantId         String      @unique
+  adultConfirmed        Boolean     @default(false)
+  consentDatingSim      Boolean     @default(false)
+  consentPublicShowcase Boolean     @default(false)
+  identityConfirmed     Boolean     @default(false)
+  consentAt             DateTime?
+  withdrawnAt           DateTime?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+}
+
+model SourceProfile {
+  id              String       @id @default(cuid())
+  participant     Participant  @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participantId   String
+  platform        Platform
+  canonicalUrl    String
+  handle          String
+  status          SourceStatus @default(pending)
+  coverageNote    String?
+  lastExtractedAt DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  evidence       EvidenceItem[]
+  extractionJobs ExtractionJob[]
+
+  @@unique([participantId, platform])
+  @@index([status])
+}
+
+model ExtractionJob {
+  id              String        @id @default(cuid())
+  sourceProfile   SourceProfile @relation(fields: [sourceProfileId], references: [id], onDelete: Cascade)
+  sourceProfileId String
+  status          JobStatus     @default(queued)
+  attempts        Int           @default(0)
+  maxAttempts     Int           @default(3)
+  error           String?
+  startedAt       DateTime?
+  finishedAt      DateTime?
+  createdAt       DateTime      @default(now())
+
+  @@index([status])
+}
+
+model EvidenceItem {
+  id              String        @id @default(cuid())
+  sourceProfile   SourceProfile @relation(fields: [sourceProfileId], references: [id], onDelete: Cascade)
+  sourceProfileId String
+  stableId        String
+  platform        Platform
+  kind            EvidenceKind
+  excerpt         String
+  sourceUrl       String
+  extractedAt     DateTime
+
+  @@unique([sourceProfileId, stableId])
+}
+
+model AnalysisVersion {
+  id            String      @id @default(cuid())
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participantId String
+  version       Int
+  modelVersion  String
+  rubricVersion String
+  generatedAt   DateTime    @default(now())
+  unknowns      String[]
+
+  claims ApprovedClaim[]
+
+  @@unique([participantId, version])
+}
+
+model ApprovedClaim {
+  id                String           @id @default(cuid())
+  analysis          AnalysisVersion  @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  analysisId        String
+  category          ClaimCategory
+  text              String
+  evidenceStableIds String[]
+  disposition       ClaimDisposition
+  confidence        Float
+  limitations       String?
+  approvalStatus    ApprovalStatus   @default(pending)
+
+  @@index([analysisId])
+  @@index([approvalStatus])
+}
+
+model Agent {
+  id                String      @id @default(cuid())
+  participant       Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participantId     String      @unique
+  personaSummary    String
+  conversationRules String[]
+  readyAt           DateTime?
+  createdAt         DateTime    @default(now())
+}
+
+model ShowcaseRun {
+  id               String    @id @default(cuid())
+  label            String
+  kind             RunKind   @default(fictional)
+  participantCount Int
+  totalPairs       Int
+  completedPairs   Int       @default(0)
+  status           RunStatus @default(pending)
+  rubricVersion    String
+  modelVersion     String
+  isPublic         Boolean   @default(false)
+  costUsd          Float     @default(0)
+  createdAt        DateTime  @default(now())
+  completedAt      DateTime?
+
+  dateSessions DateSession[]
+  rankings     RankingEntry[]
+}
+
+model DateSession {
+  id             String      @id @default(cuid())
+  run            ShowcaseRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  runId          String
+  participantAId String
+  participantBId String
+  pairKey        String
+  scenario       String
+  status         DateStatus  @default(pending)
+  totalTurns     Int         @default(10)
+  createdAt      DateTime    @default(now())
+  completedAt    DateTime?
+
+  messages    DateMessage[]
+  evaluations Evaluation[]
+
+  @@unique([runId, pairKey])
+  @@index([status])
+}
+
+model DateMessage {
+  id                   String      @id @default(cuid())
+  dateSession          DateSession @relation(fields: [dateSessionId], references: [id], onDelete: Cascade)
+  dateSessionId        String
+  turnIndex            Int
+  stage                DateStage
+  speakerParticipantId String
+  content              String
+  citedEvidenceIds     String[]
+  simulated            Boolean     @default(true)
+  createdAt            DateTime    @default(now())
+
+  @@unique([dateSessionId, turnIndex])
+}
+
+model Evaluation {
+  id                      String      @id @default(cuid())
+  dateSession             DateSession @relation(fields: [dateSessionId], references: [id], onDelete: Cascade)
+  dateSessionId           String
+  fromParticipantId       String
+  toParticipantId         String
+  sharedExplicitInterests Float
+  conversationQuality     Float
+  scenarioAgreement       Float
+  complementaryInterests  Float
+  evidenceCoverage        Float
+  compatibility           Float
+  uncertainty             Float
+  explanation             String
+  citedTurnIndexes        Int[]
+  citedEvidenceIds        String[]
+  rubricVersion           String
+  modelVersion            String
+  generatedAt             DateTime    @default(now())
+
+  rankingEntries RankingEntry[]
+
+  @@unique([dateSessionId, fromParticipantId])
+}
+
+model RankingEntry {
+  id               String      @id @default(cuid())
+  run              ShowcaseRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  runId            String
+  forParticipantId String
+  candidateId      String
+  rank             Int
+  compatibility    Float
+  evidenceCoverage Float
+  uncertainty      Float
+  evaluation       Evaluation  @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+  evaluationId     String
+
+  @@unique([runId, forParticipantId, candidateId])
+  @@index([runId, forParticipantId])
+}
+
+model DeletionRequest {
+  id            String         @id @default(cuid())
+  participant   Participant    @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participantId String         @unique
+  status        DeletionStatus @default(requested)
+  requestedAt   DateTime       @default(now())
+  processedAt   DateTime?
+}
