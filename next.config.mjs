@@ -2,6 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  output: "standalone",
+  outputFileTracingRoot: import.meta.dirname,
   serverExternalPackages: ["pg-boss", "@anthropic-ai/sdk", "bcryptjs"],
   async headers() {
     return [

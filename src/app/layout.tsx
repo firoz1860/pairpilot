@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { SiteHeader, SiteFooter } from "@/components/chrome";
 
 export const metadata: Metadata = {
   title: {
@@ -23,7 +24,13 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        {children}
+        <div className="flex min-h-dvh flex-col">
+          <SiteHeader />
+          <main id="main" className="flex-1">
+            {children}
+          </main>
+          <SiteFooter />
+        </div>
       </body>
     </html>
   );
