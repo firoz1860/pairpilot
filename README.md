@@ -8,6 +8,8 @@ simulated dates** with other agents, and produces an **explainable compatibility
 > claim real dates happened, and do not impersonate participants. The bundled showcase uses **25
 > clearly-labeled fictional participants** — no real person is profiled without verified consent.
 
+**▶ Live:** https://pairpilot-firozs-projects-70dbf044.vercel.app · **Showcase:** https://pairpilot-firozs-projects-70dbf044.vercel.app/showcase
+
 Main flow: **two official profile links → source reading → analysis page → agent date → compatibility rankings.**
 
 ---

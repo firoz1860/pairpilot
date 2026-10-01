@@ -32,8 +32,8 @@
 | 9 | Completed fictional showcase | ✅ in-app `/showcase` **and** a completed run persisted in the DB (300 dates, 600 rankings) |
 | 10 | Deployment instructions | ✅ README + below |
 | 11 | Public GitHub repository | ✅ **https://github.com/firoz1860/pairpilot** (CI green) |
-| 12 | Live deployment (public URL) | ⛔ blocked — no authenticated app-hosting account (see below) |
-| 13 | Showcase URL | ⛔ pending deployment (route `/showcase` once hosted) |
+| 12 | Live deployment (public URL) | ✅ **https://pairpilot-firozs-projects-70dbf044.vercel.app** (public, no login wall, DB-backed) |
+| 13 | Showcase URL | ✅ https://pairpilot-firozs-projects-70dbf044.vercel.app/showcase |
 | 14 | ≤3-min video script + checklist | ✅ `docs/video-script.md` (recording blocked — no screen recorder) |
 | 15 | Overall explanation <200 chars | ✅ above |
 | 16 | Scraping description <500 chars | ✅ above |
@@ -64,11 +64,21 @@ showcase uses 25 clearly-labeled fictional participants. The real-participant re
 adults, official links, completed dates with publication permission, deployment, video) remains unmet.
 No identities, links, consent records, scraped content, or extractions were fabricated.
 
+## Live deployment
+
+- **Website / showcase:** https://pairpilot-firozs-projects-70dbf044.vercel.app (Vercel, public, no login wall).
+- **Database:** Supabase Postgres (project `pairpilot`), migrated + seeded; a completed run of 300 dates /
+  600 rankings is persisted. Deployed onboarding writes to it (verified: `POST /api/onboarding` → 201).
+- **Worker caveat:** the pg-boss worker is an always-on process and does **not** run on Vercel's
+  serverless runtime. The live date room streams the deterministic showcase (no worker needed), and the
+  seeded run was completed via `npm run complete:run`. To process *newly* onboarded real participants in
+  production, run the worker on an always-on host (the provided `docker-compose.yml` runs it; or a
+  Render/Railway worker service).
+
 ## Blocked actions and the exact access needed
 
 | Blocked | Minimum access needed |
 |---|---|
-| Live deployment + public URL | An authenticated app-hosting account. The Vercel CLI token here is **invalid (logged out)**; no Render/Fly/Railway access. Run `vercel login` then `vercel deploy`. The showcase deploys with no DB; the full app also needs the `DATABASE_URL` below. |
 | Real agent dialogue/analysis | `ANTHROPIC_API_KEY` with `LLM_PROVIDER=anthropic`. Fixture mode used and labeled. |
 | Live source extraction | An authorized extraction provider (`SOURCE_PROVIDER_BASE_URL` + `SOURCE_PROVIDER_API_KEY`) and real participant consent. |
 | Recorded video / YouTube | A screen recorder (none / no ffmpeg) and an authorized YouTube integration (none). Script ready in `docs/video-script.md`. |

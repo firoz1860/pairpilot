@@ -37,8 +37,8 @@ the showcase pages. Verified by 94 passing tests, build, and a runtime smoke tes
 - GitHub Actions CI (lint, typecheck, test, showcase build, prod build) ✅ — **green on main**.
 - Public GitHub repo ✅ — https://github.com/firoz1860/pairpilot (pushed).
 - ⬜ E2E (Playwright) — not added (Playwright MCP/browser unavailable here).
-- 🟡 Live deployment — showcase deploys with no DB; **Vercel is logged out**, so it is blocked on
-  `vercel login` (see `docs/submission.md`).
+- ✅ Live deployment — **https://pairpilot-firozs-projects-70dbf044.vercel.app** (Vercel, public, DB-backed
+  via Supabase; deployment protection disabled; onboarding writes verified in prod). Worker runs off-platform.
 
 ## Known external blockers (this environment)
 - No authenticated app hosting (Vercel token invalid; no Render/Fly/Railway) → no public URL produced.
