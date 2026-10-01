@@ -107,7 +107,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           </div>
           <p className="mt-1 text-navy-muted">{p.headline}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Link href={`/showcase/participants/${id}/agent`} className="btn-secondary">
+            Agent studio
+          </Link>
           {ranking ? (
             <Link href={`/showcase/participants/${id}/rankings`} className="btn-primary">
               View rankings
