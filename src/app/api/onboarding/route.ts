@@ -4,6 +4,7 @@ import { checkRateLimit, clientKey } from "@/lib/rate-limit";
 import { setSession } from "@/lib/session";
 import { UrlValidationError } from "@/domain/url";
 import { OnboardingInputSchema, OnboardingError, onboardParticipant } from "@/services/onboarding";
+import { enqueueAnalysis } from "@/lib/queue";
 import { logger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
@@ -43,6 +44,13 @@ export async function POST(req: Request) {
   try {
     const result = await onboardParticipant(parsed.data);
     await setSession(result.participantId);
+    // Enqueue extraction + analysis for the background worker (best-effort:
+    // onboarding still succeeds if the queue is momentarily unavailable).
+    try {
+      await enqueueAnalysis(result.participantId);
+    } catch (e) {
+      logger.warn("failed to enqueue analysis job", { message: (e as Error)?.message });
+    }
     return NextResponse.json(
       { participantId: result.participantId, status: "onboarding" },
       { status: 201 },

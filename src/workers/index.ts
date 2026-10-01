@@ -20,9 +20,31 @@ async function main(): Promise<void> {
     logger.error("worker requires DATABASE_URL");
     process.exit(1);
   }
-  const boss = new PgBoss({ connectionString: env.DATABASE_URL, schema: env.JOB_SCHEMA });
+  const connUrl = new URL(env.DATABASE_URL);
+  connUrl.searchParams.delete("sslmode");
+  const isLocal = ["localhost", "127.0.0.1"].includes(connUrl.hostname);
+  const boss = new PgBoss({
+    connectionString: connUrl.toString(),
+    schema: env.JOB_SCHEMA,
+    ssl: isLocal ? undefined : { rejectUnauthorized: false },
+  });
   boss.on("error", (err) => logger.error("pg-boss error", { message: err.message }));
   await boss.start();
+
+  // pg-boss v10 requires queues to exist before work/send.
+  for (const q of Object.values(QUEUES)) await boss.createQueue(q);
+
+  // Graceful shutdown: stop accepting work and drain in-flight jobs.
+  const shutdown = async (sig: string) => {
+    logger.info("worker shutting down", { signal: sig });
+    try {
+      await boss.stop({ graceful: true, wait: true });
+    } finally {
+      process.exit(0);
+    }
+  };
+  process.on("SIGTERM", () => void shutdown("SIGTERM"));
+  process.on("SIGINT", () => void shutdown("SIGINT"));
 
   const opts = { batchSize: env.JOB_CONCURRENCY };
 

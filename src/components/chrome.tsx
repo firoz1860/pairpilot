@@ -4,6 +4,7 @@ const NAV = [
   { href: "/showcase", label: "Showcase" },
   { href: "/showcase/participants", label: "Directory" },
   { href: "/status", label: "Status" },
+  { href: "/login", label: "Log in" },
 ];
 
 export function SiteHeader() {

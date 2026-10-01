@@ -60,3 +60,6 @@ jobs:
 
       - name: End-to-end workflow verification (real Postgres)
         run: npm run verify:workflow
+
+      - name: Durable queue verification (pg-boss, real Postgres)
+        run: npm run verify:queue

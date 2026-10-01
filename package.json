@@ -25,6 +25,7 @@
     "worker": "tsx src/workers/index.ts",
     "showcase:build": "tsx scripts/build-showcase.ts",
     "verify:workflow": "tsx scripts/verify-workflow.ts",
+    "verify:queue": "tsx scripts/verify-queue.ts",
     "complete:run": "tsx scripts/complete-run.ts",
     "prestart": "node scripts/migrate-if-configured.mjs"
   },
