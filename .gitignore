@@ -45,3 +45,5 @@ Thumbs.db
 # misc
 .vercel
 tsconfig.tsbuildinfo
+
+.vercel

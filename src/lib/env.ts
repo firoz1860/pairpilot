@@ -47,7 +47,14 @@ const EnvSchema = z.object({
 
 export type Env = z.infer<typeof EnvSchema>;
 
-export const env: Env = EnvSchema.parse(process.env);
+// Trim all string env values before validation. Secrets/flags set via some
+// tooling can arrive with trailing whitespace/newlines, which would otherwise
+// break strict enum checks.
+const rawEnv: Record<string, string | undefined> = Object.fromEntries(
+  Object.entries(process.env).map(([k, v]) => [k, typeof v === "string" ? v.trim() : v]),
+);
+
+export const env: Env = EnvSchema.parse(rawEnv);
 
 export const allowedSourceHosts: string[] = env.SOURCE_ALLOWED_HOSTS.split(",")
   .map((h) => h.trim().toLowerCase())
