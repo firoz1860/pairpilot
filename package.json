@@ -25,7 +25,8 @@
     "worker": "tsx src/workers/index.ts",
     "showcase:build": "tsx scripts/build-showcase.ts",
     "verify:workflow": "tsx scripts/verify-workflow.ts",
-    "complete:run": "tsx scripts/complete-run.ts"
+    "complete:run": "tsx scripts/complete-run.ts",
+    "prestart": "node scripts/migrate-if-configured.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
