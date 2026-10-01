@@ -64,6 +64,8 @@ private/metadata-range blocking, redirect validation, timeouts, bounded retries)
 - [Scoring & ranking rubric](./docs/scoring.md)
 - [Development plan & status](./docs/development-plan.md)
 - [Verification report](./docs/verification-report.md)
+- [Submission summary & deliverable status](./docs/submission.md)
+- [Video script & recording checklist](./docs/video-script.md)
 
 ## Testing
 
